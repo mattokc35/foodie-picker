@@ -54,8 +54,8 @@ const RestaurantForm = ({ sessionId }: restaurantFormProps) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: isMobile ? "10px" : "30px", // Reduced padding on mobile
-        width: isMobile ? "100%" : "400px", // Full width on mobile
+        padding: isMobile ? "10px" : "30px", 
+        width: isMobile ? "100%" : "400px", 
         marginTop: isMobile ? "10px" : "20px",
         backgroundColor: "#fff3e0", // Soft background color
         borderRadius: "12px",

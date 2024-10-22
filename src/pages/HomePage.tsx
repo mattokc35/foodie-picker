@@ -98,9 +98,27 @@ const HomePage = () => {
       }}
     >
       <Stack direction="row" spacing={2} alignItems="center" mb={4}>
-        <RestaurantIcon sx={{ color: "#ff9800", fontSize: 50 }} />
-        <FastfoodIcon sx={{ color: "#ff5722", fontSize: 50 }} />
-        <IcecreamIcon sx={{ color: "#ffc107", fontSize: 50 }} />
+        <RestaurantIcon
+          sx={{
+            color: "#ff9800",
+            fontSize: 50,
+            "&:hover": { transform: "scale(1.2)", transition: "0.3s" },
+          }}
+        />
+        <FastfoodIcon
+          sx={{
+            color: "#ff5722",
+            fontSize: 50,
+            "&:hover": { transform: "scale(1.2)", transition: "0.3s" },
+          }}
+        />
+        <IcecreamIcon
+          sx={{
+            color: "#ffc107",
+            fontSize: 50,
+            "&:hover": { transform: "scale(1.2)", transition: "0.3s" },
+          }}
+        />
       </Stack>
 
       <Typography
