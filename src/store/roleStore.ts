@@ -8,6 +8,6 @@ interface RoleState {
 }
 
 export const useRoleStore = create<RoleState>((set) => ({
-  role: null, // Initialize role as null
+  role: null,
   setRole: (role: Role) => set({ role }),
 }));

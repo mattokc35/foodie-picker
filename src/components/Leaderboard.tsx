@@ -15,7 +15,9 @@ interface LeaderboardProps {
   scores: Player[];
 }
 
-const Leaderboard: React.FC<LeaderboardProps> = ({ scores }: LeaderboardProps) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({
+  scores,
+}: LeaderboardProps) => {
   return (
     <TableContainer
       component={Paper}
@@ -43,13 +45,19 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ scores }: LeaderboardProps) =
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell align="center" sx={{ color: "#ff9800", fontWeight: "bold" }}>
+            <TableCell
+              align="center"
+              sx={{ color: "#ff9800", fontWeight: "bold" }}
+            >
               Rank
             </TableCell>
             <TableCell sx={{ color: "#ff5722", fontWeight: "bold" }}>
               Username
             </TableCell>
-            <TableCell align="right" sx={{ color: "#ff1744", fontWeight: "bold" }}>
+            <TableCell
+              align="right"
+              sx={{ color: "#ff1744", fontWeight: "bold" }}
+            >
               Score
             </TableCell>
           </TableRow>
@@ -59,15 +67,20 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ scores }: LeaderboardProps) =
             <TableRow
               key={row.username}
               sx={{
-                backgroundColor: index % 2 === 0 ? "#FFE0B2" : "#FFCC80", // Alternating row colors
-                "&:hover": { backgroundColor: "#FFD54F" }, // Hover effect
+                backgroundColor: index % 2 === 0 ? "#FFE0B2" : "#FFCC80",
+                "&:hover": { backgroundColor: "#FFD54F" },
               }}
             >
-              <TableCell align="center" sx={{ fontWeight: "bold", color: "#ff9800" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", color: "#ff9800" }}
+              >
                 {index + 1}
               </TableCell>
               <TableCell sx={{ color: "#ff5722" }}>{row.username}</TableCell>
-              <TableCell align="right" sx={{ color: "#ff1744" }}>{row.score}</TableCell>
+              <TableCell align="right" sx={{ color: "#ff1744" }}>
+                {row.score}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
