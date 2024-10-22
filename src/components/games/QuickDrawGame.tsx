@@ -4,6 +4,8 @@ import { Button, Box, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import Leaderboard from "../Leaderboard";
 import { Player } from "../../types/types";
+import Confetti from "react-confetti";
+import { useNavigate } from "react-router-dom";
 
 interface quickDrawWinner {
   restaurant: string;
@@ -21,6 +23,8 @@ const QuickDrawGame: React.FC = () => {
   const [waitingForClick, setWaitingForClick] = useState(false);
   const [gameWinner, setGameWinner] = useState<quickDrawWinner>();
   const [playerScores, setPlayerScores] = useState<Player[]>();
+  const [showConfetti, setShowConfetti] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (socket) {
@@ -48,7 +52,7 @@ const QuickDrawGame: React.FC = () => {
         socket.off("quick-draw-winner");
       };
     }
-  }, [socket]);
+  }, [socket, navigate]);
 
   //host starts the game
   const startQuickDrawGame = () => {
@@ -93,6 +97,17 @@ const QuickDrawGame: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (gameWinner) {
+      setShowConfetti(true);
+      setTimeout(() => {
+        setShowConfetti(false);
+        debugger;
+        socket?.emit("delete-session");
+      }, 10000);
+    }
+  }, [gameWinner, socket]);
+
   return (
     <Box
       display="flex"
@@ -101,6 +116,8 @@ const QuickDrawGame: React.FC = () => {
       justifyContent="center"
       sx={{ minHeight: "300px" }}
     >
+      {showConfetti && <Confetti />}
+
       {/* Only show the start button for the host */}
       {role === "host" && !gameStarted && (
         <Button
@@ -185,11 +202,17 @@ const QuickDrawGame: React.FC = () => {
         <>
           <Typography
             variant="h6"
-            sx={{ color: "#333", marginTop: "20px", marginBottom: "20px", fontWeight: "normal" }}
+            sx={{
+              color: "#333",
+              marginTop: "20px",
+              marginBottom: "20px",
+              fontWeight: "normal",
+            }}
           >
             {gameWinner.winnerUser} has won with a time of{" "}
             {gameWinner.winnerScore} ms. Their selected restaurant is:{" "}
             <span style={{ fontWeight: "bold" }}>{gameWinner.restaurant}</span>
+            This room will now close momentarily...
           </Typography>
           <Leaderboard scores={playerScores} />
         </>

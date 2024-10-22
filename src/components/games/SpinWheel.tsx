@@ -27,8 +27,6 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ restaurants }) => {
   const [spinning, setSpinning] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // State variables for error and success messages
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const restaurantSpinData = restaurants.map((restaurant) => ({
@@ -51,18 +49,8 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ restaurants }) => {
         setSpinning(true);
       });
 
-      socket.on("session-deleted", () => {
-        setErrorMessage(
-          "The session was deleted. Redirecting to the home page..."
-        );
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
-      });
-
       return () => {
         socket.off("spin-wheel");
-        socket.off("session-deleted");
       };
     }
   }, [socket, navigate]);
@@ -169,7 +157,6 @@ const SpinWheel: React.FC<SpinWheelProps> = ({ restaurants }) => {
       )}
 
       {/* Display messages */}
-      <MessageDisplay message={errorMessage} type="error" />
       <MessageDisplay message={successMessage} type="validation" />
     </Box>
   );

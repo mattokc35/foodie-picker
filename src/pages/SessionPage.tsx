@@ -73,6 +73,7 @@ const SessionPage = () => {
       });
 
       socket.on("session-deleted", () => {
+        debugger;
         setSessionDeleted(true);
       });
 
