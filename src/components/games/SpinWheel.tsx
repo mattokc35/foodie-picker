@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useWebSocket } from "../contexts/WebSocketContext";
+import { useWebSocket } from "../../contexts/WebSocketContext";
 import { Button, Box, Typography, Stack } from "@mui/material";
 import { Wheel } from "react-custom-roulette";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
@@ -8,9 +8,9 @@ import FastfoodIcon from "@mui/icons-material/Fastfood";
 import LocalPizzaIcon from "@mui/icons-material/LocalPizza";
 import IcecreamIcon from "@mui/icons-material/Icecream";
 import Confetti from "react-confetti";
-import { useRoleStore } from "../store/roleStore";
-import MessageDisplay from "../components/MessageDisplay";
-import { Restaurant } from "../types/types";
+import { useRoleStore } from "../../store/roleStore";
+import MessageDisplay from "../MessageDisplay";
+import { Restaurant } from "../../types/types";
 type SpinWheelProps = {
   restaurants: Restaurant[];
 };

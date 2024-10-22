@@ -185,7 +185,7 @@ const QuickDrawGame: React.FC = () => {
         <>
           <Typography
             variant="h6"
-            sx={{ color: "#333", marginTop: "20px", fontWeight: "normal" }}
+            sx={{ color: "#333", marginTop: "20px", marginBottom: "20px", fontWeight: "normal" }}
           >
             {gameWinner.winnerUser} has won with a time of{" "}
             {gameWinner.winnerScore} ms. Their selected restaurant is:{" "}
