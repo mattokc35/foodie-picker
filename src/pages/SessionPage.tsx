@@ -25,6 +25,7 @@ import LocalPizzaIcon from "@mui/icons-material/LocalPizza";
 import IcecreamIcon from "@mui/icons-material/Icecream";
 import MessageDisplay from "../components/MessageDisplay";
 import { User, Restaurant, Game } from "../types/types";
+import PlateBalanceGame from "../components/games/PlateBalanceGame";
 
 const SessionPage = () => {
   const { socket, connected } = useWebSocket();
@@ -253,6 +254,9 @@ const SessionPage = () => {
                     >
                       <MenuItem value="wheel">Spin the Wheel</MenuItem>
                       <MenuItem value="quick-draw">Quick Draw Game</MenuItem>
+                      <MenuItem value="plate-balance">
+                        Balance the Plate Game
+                      </MenuItem>
                     </Select>
                   </FormControl>
                 ) : (
@@ -260,12 +264,18 @@ const SessionPage = () => {
                     Currently selected game: {gameOption}
                   </Typography>
                 )}
-
-                {gameOption === "wheel" ? (
-                  <SpinWheel restaurants={restaurants} />
-                ) : (
-                  <QuickDrawGame />
-                )}
+                {(() => {
+                  switch (gameOption) {
+                    case "wheel":
+                      return <SpinWheel restaurants={restaurants} />;
+                    case "quick-draw":
+                      return <QuickDrawGame />;
+                    case "plate-balance":
+                      return <PlateBalanceGame />;
+                    default:
+                      return null;
+                  }
+                })()}
               </Box>
             )}
           </>

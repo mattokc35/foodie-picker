@@ -14,4 +14,4 @@ export interface User {
     score: number;
   }
 
-  export type Game = "wheel" | "quick-draw";
+  export type Game = "wheel" | "quick-draw" | "plate-balance";

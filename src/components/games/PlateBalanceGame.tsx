@@ -5,37 +5,36 @@ import React, { useState, useEffect } from "react";
 import Leaderboard from "../Leaderboard";
 import { Player } from "../../types/types";
 import Confetti from "react-confetti";
-import { useNavigate } from "react-router-dom";
 
-interface quickDrawWinner {
+interface PlateBalanceWinner {
   restaurant: string;
   winnerUser: string;
   winnerScore: number;
 }
 
-const QuickDrawGame: React.FC = () => {
+const PlateBalanceGame: React.FC = () => {
   const { socket } = useWebSocket();
   const role = useRoleStore((state) => state.role);
   const [gameStarted, setGameStarted] = useState(false);
-  const [reactionTime, setReactionTime] = useState<number | null>(null);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [waitingForClick, setWaitingForClick] = useState(false);
-  const [gameWinner, setGameWinner] = useState<quickDrawWinner>();
+  const [tiltAngleX, setTiltAngleX] = useState<number | null>(null);
+  const [tiltAngleY, setTiltAngleY] = useState<number | null>(null);
+  const [balanceTime, setBalanceTime] = useState<number>(0);
+  const [gameWinner, setGameWinner] = useState<PlateBalanceWinner>();
   const [playerScores, setPlayerScores] = useState<Player[]>();
   const [showConfetti, setShowConfetti] = useState(false);
-  const navigate = useNavigate();
+  const [isBalancing, setIsBalancing] = useState(false);
+  const [fallDetected, setFallDetected] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     if (socket) {
-      //listen for when the game starts
-      socket.on("quick-draw-started", () => {
+      socket.on("plate-balance-started", () => {
         setGameStarted(true);
         startCountdown();
       });
 
       socket.on(
-        "quick-draw-winner",
+        "plate-balance-winner",
         (
           restaurant: string,
           winnerUser: string,
@@ -48,18 +47,11 @@ const QuickDrawGame: React.FC = () => {
       );
 
       return () => {
-        socket.off("quick-draw-started");
-        socket.off("quick-draw-winner");
+        socket.off("plate-balance-started");
+        socket.off("plate-balance-winner");
       };
     }
-  }, [socket, navigate]);
-
-  //host starts the game
-  const startQuickDrawGame = () => {
-    if (socket) {
-      socket.emit("start-quick-draw");
-    }
-  };
+  }, [socket]);
 
   const startCountdown = () => {
     setCountdown(3);
@@ -70,39 +62,59 @@ const QuickDrawGame: React.FC = () => {
         } else {
           clearInterval(countdownInterval);
           setCountdown(null);
-          triggerRandomDelay();
+          startBalanceTracking();
           return null;
         }
       });
     }, 1000);
   };
 
-  const triggerRandomDelay = () => {
-    const randomDelay = Math.random() * 3000 + 2000;
-    setTimeout(() => {
-      setStartTime(Date.now());
-      setWaitingForClick(true);
-    }, randomDelay);
+  const startBalanceTracking = () => {
+    setIsBalancing(true);
+    window.addEventListener("deviceorientation", handleDeviceTilt);
+    startBalanceTimer();
   };
 
-  //handle when player taps/reacts
-  const handleReact = () => {
-    if (startTime) {
-      const reaction = Date.now() - startTime;
-      setReactionTime(reaction);
-      if (socket) {
-        socket.emit("quick-draw-finished", reaction);
+  const startBalanceTimer = () => {
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      if (!fallDetected) {
+        setBalanceTime(Date.now() - startTime);
+      } else {
+        clearInterval(timer);
       }
-      setWaitingForClick(false);
+    }, 100);
+  };
+
+  const handleDeviceTilt = (event: DeviceOrientationEvent) => {
+    const { beta, gamma } = event;
+    if (beta && gamma) {
+      setTiltAngleX(Math.abs(gamma));
+      setTiltAngleY(Math.abs(beta));
+
+      if (Math.abs(beta) > 45 || Math.abs(gamma) > 45) {
+        setFallDetected(true);
+        stopBalanceTracking();
+      }
     }
   };
+
+  const stopBalanceTracking = () => {
+    setIsBalancing(false);
+    window.removeEventListener("deviceorientation", handleDeviceTilt);
+  };
+
+  useEffect(() => {
+    if (fallDetected && socket) {
+      socket.emit("plate-balance-finished", balanceTime);
+    }
+  }, [fallDetected, balanceTime, socket]);
 
   useEffect(() => {
     if (gameWinner) {
       setShowConfetti(true);
       setTimeout(() => {
         setShowConfetti(false);
-        debugger;
         socket?.emit("delete-session");
       }, 10000);
     }
@@ -118,11 +130,10 @@ const QuickDrawGame: React.FC = () => {
     >
       {showConfetti && <Confetti />}
 
-      {/* Only show the start button for the host */}
       {role === "host" && !gameStarted && (
         <Button
           variant="contained"
-          onClick={startQuickDrawGame}
+          onClick={() => socket?.emit("start-plate-balance")}
           sx={{
             padding: "16px 32px",
             backgroundColor: "#ff9800",
@@ -141,7 +152,6 @@ const QuickDrawGame: React.FC = () => {
         </Button>
       )}
 
-      {/* Show countdown */}
       {countdown !== null && (
         <Typography
           variant="h1"
@@ -157,47 +167,17 @@ const QuickDrawGame: React.FC = () => {
         </Typography>
       )}
 
-      {/* Show waiting message */}
-      {waitingForClick && !reactionTime && (
-        <Typography variant="h6" sx={{ marginBottom: "20px", color: "#777" }}>
-          Get ready to react...
-        </Typography>
+      {isBalancing && (
+        <>
+          <Typography variant="h6" sx={{ marginBottom: "20px", color: "#777" }}>
+            Tilt X: {tiltAngleX?.toFixed(2)}°, Tilt Y: {tiltAngleY?.toFixed(2)}°
+          </Typography>
+          <Typography variant="h6" sx={{ marginBottom: "20px", color: "#777" }}>
+            Time Balanced: {(balanceTime / 1000).toFixed(2)}s
+          </Typography>
+        </>
       )}
 
-      {/* Show the reaction button once the game starts after the random delay */}
-      {waitingForClick && (
-        <Button
-          variant="contained"
-          onClick={handleReact}
-          sx={{
-            width: "200px",
-            height: "200px",
-            borderRadius: "50%",
-            backgroundColor: "#ff1744",
-            color: "#fff",
-            fontSize: "24px",
-            fontWeight: "bold",
-            boxShadow: "0 6px 15px rgba(0, 0, 0, 0.3)",
-            transition: "transform 0.3s",
-            "&:hover": {
-              backgroundColor: "#ff4569",
-              transform: "scale(1.05)",
-            },
-          }}
-        >
-          CLICK!
-        </Button>
-      )}
-
-      {/* Show the player's reaction time */}
-      {reactionTime && (
-        <Typography
-          variant="h6"
-          sx={{ color: "#333", marginTop: "20px", fontWeight: "normal" }}
-        >
-          Your reaction time: {reactionTime} ms
-        </Typography>
-      )}
       {gameWinner && playerScores && (
         <>
           <Typography
@@ -209,10 +189,9 @@ const QuickDrawGame: React.FC = () => {
               fontWeight: "normal",
             }}
           >
-            {gameWinner.winnerUser} has won with a time of{" "}
-            {gameWinner.winnerScore} ms. Their selected restaurant is:{" "}
-            <span style={{ fontWeight: "bold" }}>{gameWinner.restaurant}</span><br/>
-            This room will now close momentarily...
+            {gameWinner.winnerUser} has won by balancing for{" "}
+            {gameWinner.winnerScore} seconds. Their selected restaurant is:{" "}
+            <span style={{ fontWeight: "bold" }}>{gameWinner.restaurant}</span>
           </Typography>
           <Leaderboard scores={playerScores} />
         </>
@@ -221,4 +200,4 @@ const QuickDrawGame: React.FC = () => {
   );
 };
 
-export default QuickDrawGame;
+export default PlateBalanceGame;
