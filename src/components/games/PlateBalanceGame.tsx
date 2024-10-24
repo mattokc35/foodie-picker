@@ -62,12 +62,29 @@ const PlateBalanceGame: React.FC = () => {
         } else {
           clearInterval(countdownInterval);
           setCountdown(null);
-          startBalanceTracking();
+          requestOrientationPermission();
           return null;
         }
       });
     }, 1000);
   };
+
+  //request permission for device orientation for iOS
+  const requestOrientationPermission = () => {
+    if(typeof DeviceMotionEvent !== "undefined" && typeof(DeviceMotionEvent as any).requestPermission === "function"){
+      (DeviceMotionEvent as any).requestPermission().then((response: string) => {
+        if(response === "granted"){
+          startBalanceTracking();
+        }else{
+          alert("Permission denied. Please allow access to motion sensors");
+        }
+      })
+      .catch(console.error);
+    }else{
+      //not iOS or no need for permission
+      startBalanceTracking();
+    }
+  }
 
   const startBalanceTracking = () => {
     setIsBalancing(true);
