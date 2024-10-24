@@ -25,6 +25,7 @@ const PlateBalanceGame: React.FC = () => {
   const [isBalancing, setIsBalancing] = useState(false);
   const [fallDetected, setFallDetected] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [showTapToStart, setShowTapToStart] = useState(false); // New state for "Tap to Start"
 
   useEffect(() => {
     if (socket) {
@@ -62,29 +63,61 @@ const PlateBalanceGame: React.FC = () => {
         } else {
           clearInterval(countdownInterval);
           setCountdown(null);
-          requestOrientationPermission();
+          setShowTapToStart(true); // Show "Tap to Start" after countdown finishes
           return null;
         }
       });
     }, 1000);
   };
 
-  //request permission for device orientation for iOS
-  const requestOrientationPermission = () => {
-    if(typeof DeviceMotionEvent !== "undefined" && typeof(DeviceMotionEvent as any).requestPermission === "function"){
-      (DeviceMotionEvent as any).requestPermission().then((response: string) => {
-        if(response === "granted"){
-          startBalanceTracking();
-        }else{
-          alert("Permission denied. Please allow access to motion sensors");
-        }
-      })
-      .catch(console.error);
-    }else{
-      //not iOS or no need for permission
+  // Handle "Tap to Start" interaction
+  const handleTapToStart = () => {
+    setShowTapToStart(false);
+    requestPermissions();
+  };
+
+  // Request both motion and orientation permissions for iOS
+  const requestPermissions = () => {
+    if (
+      typeof DeviceMotionEvent !== "undefined" &&
+      typeof (DeviceMotionEvent as any).requestPermission === "function"
+    ) {
+      (DeviceMotionEvent as any)
+        .requestPermission()
+        .then((response: string) => {
+          if (response === "granted") {
+            requestOrientationPermission(); // Request orientation after motion is granted
+          } else {
+            alert("Motion permission denied. Please allow access to motion sensors.");
+          }
+        })
+        .catch(console.error);
+    } else {
+      // Not iOS or permission not needed
       startBalanceTracking();
     }
-  }
+  };
+
+  // Request orientation permission (if needed) for iOS
+  const requestOrientationPermission = () => {
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof (DeviceOrientationEvent as any).requestPermission === "function"
+    ) {
+      (DeviceOrientationEvent as any)
+        .requestPermission()
+        .then((response: string) => {
+          if (response === "granted") {
+            startBalanceTracking();
+          } else {
+            alert("Orientation permission denied. Please allow access to motion sensors.");
+          }
+        })
+        .catch(console.error);
+    } else {
+      startBalanceTracking();
+    }
+  };
 
   const startBalanceTracking = () => {
     setIsBalancing(true);
@@ -182,6 +215,28 @@ const PlateBalanceGame: React.FC = () => {
         >
           {countdown}
         </Typography>
+      )}
+
+      {showTapToStart && (
+        <Button
+          variant="contained"
+          onClick={handleTapToStart}
+          sx={{
+            padding: "16px 32px",
+            backgroundColor: "#ff9800",
+            fontSize: "18px",
+            fontWeight: "bold",
+            borderRadius: "12px",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+            transition: "transform 0.2s",
+            "&:hover": {
+              backgroundColor: "#ffa726",
+              transform: "scale(1.05)",
+            },
+          }}
+        >
+          Tap to Start
+        </Button>
       )}
 
       {isBalancing && (
